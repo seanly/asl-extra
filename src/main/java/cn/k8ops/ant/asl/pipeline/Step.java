@@ -3,7 +3,6 @@ package cn.k8ops.ant.asl.pipeline;
 import cn.k8ops.ant.asl.pipeline.exception.ConfigException;
 import cn.k8ops.ant.asl.pipeline.util.StringMatch;
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
