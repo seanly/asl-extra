@@ -1,0 +1,15 @@
+environment:
+  APP_NAME: sample
+  APP_ENV: test
+
+# pipeline模板
+pipeline: # <- steps
+  - name: build
+    environment:
+      HELLO: world
+    tasks:
+      - task.id: sample
+    when:
+      environment:
+        APP_ENV: test
+

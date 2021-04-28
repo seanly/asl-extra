@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<antlib>
+    <!-- Task -->
+    <taskdef classname="cn.k8ops.ant.PipelineTask" name="pipeline"/>
+</antlib>
