@@ -9,6 +9,7 @@ pipeline: # <- steps
       HELLO: world
     tasks:
       - task.id: sample
+        hello: world
     when:
       environment:
         APP_ENV: test

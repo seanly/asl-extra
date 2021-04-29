@@ -3,6 +3,7 @@ package cn.k8ops.ant.asl.pipeline;
 import cn.k8ops.ant.asl.pipeline.exception.ConfigException;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static cn.k8ops.ant.asl.pipeline.Config.KEY_TASK_ID;
@@ -11,8 +12,8 @@ import static cn.k8ops.ant.asl.pipeline.Config.KEY_TASK_ID;
 public class Task {
 
     private String id;
-    private Map<String, String> properties;
-    private Map<String, String> environment;
+    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> environment = new HashMap<>();
 
     public Task(String id, Map<String, String> properties) {
         this.id = id;

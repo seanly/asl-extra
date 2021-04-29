@@ -25,7 +25,7 @@
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
             <version>1.10.9</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -55,9 +55,9 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>src/main/assembly/package.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                     <execution>

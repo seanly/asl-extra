@@ -10,8 +10,12 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.util.StringUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class PipelineTask extends Task {
 
@@ -33,8 +37,8 @@ public class PipelineTask extends Task {
             throw new BuildException("config file is not exist.");
         }
 
-
         this.config = Config.parse(file);
+        initDirs();
         runPipeline();
     }
 
@@ -95,11 +99,36 @@ public class PipelineTask extends Task {
         return ant(task);
     }
 
+    public final static String DIR_DOT_CI = ".ci";
+
+    @SneakyThrows
     private boolean ant(cn.k8ops.ant.asl.pipeline.Task task) {
         log(String.format("--//task: %s", task.getId()));
 
+        String runId = String.format("%s-%s", task.getId(), getCurrentTime());
+
+        Properties properties = new Properties();
+        properties.putAll(task.getProperties());
+
+        File propsFile = new File(getWs(), DIR_DOT_CI + File.separator + runId + ".properties");
+        properties.store(new FileOutputStream(propsFile), "task properties");
 
         return true;
     }
 
+    private File getWs() {
+        File configFile = new File(file);
+        return configFile.getParentFile();
+    }
+
+    private void initDirs() {
+        File dotCIDir = new File(getWs(), DIR_DOT_CI);
+        if (!dotCIDir.exists()) {
+            dotCIDir.mkdirs();
+        }
+    }
+
+    public static String getCurrentTime() {
+        return new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
+    }
 }
