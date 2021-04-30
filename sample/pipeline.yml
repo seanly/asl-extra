@@ -6,10 +6,10 @@ environment:
 pipeline: # <- steps
   - name: build
     environment:
-      HELLO: world
+      HELLO: hello-world
     tasks:
       - task.id: sample
-        hello: world
+        arg1: hello-world-${env.HELLO}
     when:
       environment:
         APP_ENV: test

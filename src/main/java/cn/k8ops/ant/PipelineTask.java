@@ -121,6 +121,10 @@ public class PipelineTask extends Task {
         Properties properties = new Properties();
         properties.putAll(task.getProperties());
 
+        for (Map.Entry<String, String> environ : task.getEnvironment().entrySet()) {
+            properties.put(String.format("env.%s", environ.getKey()), environ.getValue());
+        }
+
         File propsFile = new File(getWs(), DIR_DOT_CI + File.separator + runId + ".properties");
         properties.store(new FileOutputStream(propsFile), "task properties");
 
@@ -148,6 +152,7 @@ public class PipelineTask extends Task {
         commands.add(antExec.getAbsolutePath());
         commands.add("-f");
         commands.add(runXml.getAbsolutePath());
+        commands.add("task");
         commands.add("-propertyfile");
         commands.add(propsFile.getAbsolutePath());
         commands.add("-logger");
@@ -158,7 +163,6 @@ public class PipelineTask extends Task {
                 .map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
 
         String[] cmds = commands.toArray(new String[commands.size()]);
-        log(String.join(" ", cmds));
         Process p = Runtime.getRuntime().exec(cmds, environ, getWs());
         StreamCopier copier = new StreamCopier(p.getInputStream());
         copier.start();
