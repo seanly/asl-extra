@@ -73,6 +73,8 @@ public class Task {
             task.environment = environment;
         }
 
+        task.properties.put("task.id", task.getId());
+
         return task;
     }
 }

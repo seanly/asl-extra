@@ -9,13 +9,10 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.util.StringUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class PipelineTask extends Task {
 
@@ -24,10 +21,20 @@ public class PipelineTask extends Task {
     private String file;
 
     private Config config;
+    protected static boolean isWindows;
+    protected static String osName;
+
+    protected void initTask() {
+        // Check for windows..
+        osName = System.getProperty("os.name", "unknown").toLowerCase();
+        isWindows = osName.indexOf("windows") >= 0;
+    }
 
     @SneakyThrows
     @Override
     public void execute() {
+        initTask();
+
         if (null == StringUtils.trimToNull(file)) {
             throw new BuildException("config not set.");
         }
@@ -39,7 +46,11 @@ public class PipelineTask extends Task {
 
         this.config = Config.parse(file);
         initDirs();
-        runPipeline();
+
+        boolean ret = runPipeline();
+        if (!ret) {
+            throw new BuildException("pipeline run error.");
+        }
     }
 
     public boolean runPipeline() {
@@ -60,7 +71,7 @@ public class PipelineTask extends Task {
     private boolean runStep(Step step) {
         boolean result = false;
 
-        log(String.format("--//STEP: %s", step.getName()));
+        log(String.format("--//-----STEP: %s------", step.getName()));
 
         Map<String, String> localEnviron = config.getEnvironment();
         localEnviron.putAll(step.getEnvironment());
@@ -113,8 +124,56 @@ public class PipelineTask extends Task {
         File propsFile = new File(getWs(), DIR_DOT_CI + File.separator + runId + ".properties");
         properties.store(new FileOutputStream(propsFile), "task properties");
 
+        String aslRoot;
+        if (getProject() == null) {
+            aslRoot = System.getProperty("asl.root");
+        } else {
+            aslRoot = getProject().getProperty("asl.root");
+        }
+
+        if (aslRoot == null) {
+            throw new BuildException("asl.root is not set.");
+        }
+
+        File aslDir = new File(aslRoot);
+        if (!aslDir.exists()) {
+            throw new BuildException("asl.root dir is not exists.");
+        }
+
+        File antExec = new File(aslDir, "tools/ant/bin/ant");
+        File runXml = new File(aslDir, "run.xml");
+
+        // command
+        List<String> commands = new ArrayList<>();
+        commands.add(antExec.getAbsolutePath());
+        commands.add("-f");
+        commands.add(runXml.getAbsolutePath());
+        commands.add("-propertyfile");
+        commands.add(propsFile.getAbsolutePath());
+        commands.add("-logger");
+        commands.add("org.apache.tools.ant.NoBannerLogger");
+
+        // environment
+        String[] environ = task.getEnvironment().entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
+
+        String[] cmds = commands.toArray(new String[commands.size()]);
+        log(String.join(" ", cmds));
+        Process p = Runtime.getRuntime().exec(cmds, environ, getWs());
+        StreamCopier copier = new StreamCopier(p.getInputStream());
+        copier.start();
+
+        int exitVal = p.waitFor();
+        copier.doJoin();
+        //String stdOutAndError = copier.getOutput();
+
+        if (exitVal != 0 ) {
+            return false;
+        }
+
         return true;
     }
+
 
     private File getWs() {
         File configFile = new File(file);
@@ -130,5 +189,110 @@ public class PipelineTask extends Task {
 
     public static String getCurrentTime() {
         return new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
+    }
+
+    /** featureManager's exit codes. */
+    public enum ReturnCode {
+        OK(0),
+        // Jump a few numbers for error return codes
+        BAD_ARGUMENT(20),
+        RUNTIME_EXCEPTION(21),
+        ALREADY_EXISTS(22),
+        BAD_FEATURE_DEFINITION(23),
+        MISSING_CONTENT(24),
+        IO_FAILURE(25),
+        PRODUCT_EXT_NOT_FOUND(26),
+        PRODUCT_EXT_NOT_DEFINED(27),
+        PRODUCT_EXT_NO_FEATURES_FOUND(28),
+        NOT_VALID_FOR_CURRENT_PRODUCT(29);
+
+        final int val;
+
+        ReturnCode(int val) {
+            this.val = val;
+        }
+
+        public int getValue() {
+            return val;
+        }
+    }
+
+    //-----
+    private class StreamCopier extends Thread {
+        private final BufferedReader reader;
+        private boolean joined;
+        private boolean terminated;
+        private StringBuilder sb;
+
+        StreamCopier(InputStream input) {
+            this.reader = new BufferedReader(new InputStreamReader(input));
+            setDaemon(true);
+        }
+
+        @Override
+        public void run() {
+            try {
+                sb = new StringBuilder();
+                for (String line; (line = reader.readLine()) != null;) {
+                    synchronized (this) {
+                        if (joined) {
+                            // The main thread was notified that the process
+                            // ended and has already given up waiting for
+                            // output from the foreground process.
+                            break;
+                        }
+                        sb.append(line);
+                        log(line);
+                    }
+                }
+            } catch (IOException ex) {
+                throw new BuildException(ex);
+            } finally {
+                if (isWindows) {
+                    synchronized (this) {
+                        terminated = true;
+                        notifyAll();
+                    }
+                }
+            }
+        }
+
+        public String getOutput() {
+            if (sb != null) {
+                return sb.toString();
+            }
+            return "";
+        }
+
+        public void doJoin() throws InterruptedException {
+            if (isWindows) {
+                // Windows doesn't disconnect background processes (start /b)
+                // from the console of foreground processes, so waiting until
+                // the end of output from server.bat means waiting until the
+                // server process itself ends. We can't wait that long, so we
+                // wait one second after .waitFor() ends. Hopefully this will
+                // be long enough to copy all the output from the script.
+
+                synchronized (this) {
+                    long begin = System.nanoTime();
+                    long end = begin
+                            + TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
+                    long duration = end - begin;
+                    while (!terminated && duration > 0) {
+                        TimeUnit.NANOSECONDS.timedWait(this, duration);
+                        duration = end - System.nanoTime();
+                    }
+
+                    // If the thread didn't end after waiting for a second,
+                    // then assume it's stuck in a blocking read. Oh well,
+                    // it's a daemon thread, so it'll go away eventually. Let
+                    // it know that we gave up to avoid spurious output in case
+                    // it eventually wakes up.
+                    joined = true;
+                }
+            } else {
+                super.join();
+            }
+        }
     }
 }
