@@ -80,6 +80,8 @@ public class PipelineTask extends Task {
         }
 
         for (cn.k8ops.ant.asl.pipeline.Task task : step.getTasks()) {
+
+            log("-----TASKS...-------------");
             result = runTask(task);
             if (!result) {
                 break;
@@ -87,6 +89,7 @@ public class PipelineTask extends Task {
         }
 
         if (step.getAfterTasks().size() != 0) {
+            log("------AFTER-TASKS... ------");
             boolean result2 = runTasks(step.getAfterTasks());
             if (result) {
                 result = result2;
