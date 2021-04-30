@@ -198,32 +198,6 @@ public class PipelineTask extends Task {
         return new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
     }
 
-    /** featureManager's exit codes. */
-    public enum ReturnCode {
-        OK(0),
-        // Jump a few numbers for error return codes
-        BAD_ARGUMENT(20),
-        RUNTIME_EXCEPTION(21),
-        ALREADY_EXISTS(22),
-        BAD_FEATURE_DEFINITION(23),
-        MISSING_CONTENT(24),
-        IO_FAILURE(25),
-        PRODUCT_EXT_NOT_FOUND(26),
-        PRODUCT_EXT_NOT_DEFINED(27),
-        PRODUCT_EXT_NO_FEATURES_FOUND(28),
-        NOT_VALID_FOR_CURRENT_PRODUCT(29);
-
-        final int val;
-
-        ReturnCode(int val) {
-            this.val = val;
-        }
-
-        public int getValue() {
-            return val;
-        }
-    }
-
     //-----
     private class StreamCopier extends Thread {
         private final BufferedReader reader;
