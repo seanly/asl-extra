@@ -79,9 +79,8 @@ public class PipelineTask extends Task {
             return true;
         }
 
+        log("-----TASKS...-------------");
         for (cn.k8ops.ant.asl.pipeline.Task task : step.getTasks()) {
-
-            log("-----TASKS...-------------");
             result = runTask(task);
             if (!result) {
                 break;
@@ -180,7 +179,6 @@ public class PipelineTask extends Task {
 
         return true;
     }
-
 
     private File getWs() {
         File configFile = new File(file);
