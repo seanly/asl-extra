@@ -130,6 +130,9 @@ public class PipelineTask extends Task {
         }
 
         File propsFile = new File(getWs(), DIR_DOT_CI + File.separator + runId + ".properties");
+        if (!propsFile.getParentFile().exists()) {
+            propsFile.getParentFile().mkdirs();
+        }
         properties.store(new FileOutputStream(propsFile), "task properties");
 
         String aslRoot;
