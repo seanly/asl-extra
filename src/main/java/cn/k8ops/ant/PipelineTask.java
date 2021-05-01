@@ -160,18 +160,11 @@ public class PipelineTask extends Task {
         commands.add("-logger");
         commands.add("org.apache.tools.ant.NoBannerLogger");
 
-        // environment
-        String[] environ = task.getEnvironment().entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
-
-        String[] cmds = commands.toArray(new String[commands.size()]);
-        Process p = Runtime.getRuntime().exec(cmds, environ, getWs());
-        StreamCopier copier = new StreamCopier(p.getInputStream());
-        copier.start();
-
+        ProcessBuilder processBuilder = new ProcessBuilder(commands);
+        Map<String, String> env = processBuilder.environment();
+        env.putAll(task.getEnvironment());
+        Process p = processBuilder.inheritIO().start();
         int exitVal = p.waitFor();
-        copier.doJoin();
-        //String stdOutAndError = copier.getOutput();
 
         if (exitVal != 0 ) {
             return false;
