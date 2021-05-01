@@ -12,5 +12,5 @@ pipeline: # <- steps
         arg1: hello-world-${env.HELLO}
     when:
       environment:
-        APP_ENV: test
+        WORLD: hello
 

@@ -23,6 +23,7 @@ public class PipelineTask extends Task {
     private Config config;
     protected static boolean isWindows;
     protected static String osName;
+    protected ProcessBuilder processBuilder = new ProcessBuilder();
 
     protected void initTask() {
         // Check for windows..
@@ -71,15 +72,16 @@ public class PipelineTask extends Task {
     private boolean runStep(Step step) {
         boolean result = false;
 
-        log(String.format("--//-----STEP: %s------", step.getName()));
+        log(String.format("--//STEP: %s------", step.getName()));
 
         Map<String, String> localEnviron = config.getEnvironment();
         localEnviron.putAll(step.getEnvironment());
+        localEnviron.putAll(processBuilder.environment());
         if (!step.shouldRun(localEnviron)) {
             return true;
         }
 
-        log("-----TASKS...-------------");
+        log("--//TASKS-------------");
         for (cn.k8ops.ant.asl.pipeline.Task task : step.getTasks()) {
             result = runTask(task);
             if (!result) {
@@ -88,7 +90,7 @@ public class PipelineTask extends Task {
         }
 
         if (step.getAfterTasks().size() != 0) {
-            log("------AFTER-TASKS... ------");
+            log("--//AFTER-TASKS------");
             boolean result2 = runTasks(step.getAfterTasks());
             if (result) {
                 result = result2;
@@ -160,7 +162,7 @@ public class PipelineTask extends Task {
         commands.add("-logger");
         commands.add("org.apache.tools.ant.NoBannerLogger");
 
-        ProcessBuilder processBuilder = new ProcessBuilder(commands);
+        processBuilder.command(commands);
         Map<String, String> env = processBuilder.environment();
         env.putAll(task.getEnvironment());
         Process p = processBuilder.inheritIO().start();
