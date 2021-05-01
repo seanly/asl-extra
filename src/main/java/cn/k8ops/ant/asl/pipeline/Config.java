@@ -42,7 +42,7 @@ public class Config {
     }
 
     private void parseEnvironment() {
-        Map<String, String> localEnviron = new HashMap<String, String>();
+        Map<String, String> localEnviron = new HashMap<>();
         if (rawConfig.containsKey(KEY_ENVIRONMENT)) {
             localEnviron = (Map<String, String>) rawConfig.get(KEY_ENVIRONMENT);
         }
