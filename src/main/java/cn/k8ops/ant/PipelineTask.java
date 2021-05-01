@@ -166,13 +166,7 @@ public class PipelineTask extends Task {
         Map<String, String> env = processBuilder.environment();
         env.putAll(task.getEnvironment());
         Process p = processBuilder.inheritIO().start();
-        int exitVal = p.waitFor();
-
-        if (exitVal != 0 ) {
-            return false;
-        }
-
-        return true;
+        return p.waitFor() == 0;
     }
 
     private File getWs() {
@@ -189,84 +183,5 @@ public class PipelineTask extends Task {
 
     public static String getCurrentTime() {
         return new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
-    }
-
-    //-----
-    private class StreamCopier extends Thread {
-        private final BufferedReader reader;
-        private boolean joined;
-        private boolean terminated;
-        private StringBuilder sb;
-
-        StreamCopier(InputStream input) {
-            this.reader = new BufferedReader(new InputStreamReader(input));
-            setDaemon(true);
-        }
-
-        @Override
-        public void run() {
-            try {
-                sb = new StringBuilder();
-                for (String line; (line = reader.readLine()) != null;) {
-                    synchronized (this) {
-                        if (joined) {
-                            // The main thread was notified that the process
-                            // ended and has already given up waiting for
-                            // output from the foreground process.
-                            break;
-                        }
-                        sb.append(line);
-                        log(line);
-                    }
-                }
-            } catch (IOException ex) {
-                throw new BuildException(ex);
-            } finally {
-                if (isWindows) {
-                    synchronized (this) {
-                        terminated = true;
-                        notifyAll();
-                    }
-                }
-            }
-        }
-
-        public String getOutput() {
-            if (sb != null) {
-                return sb.toString();
-            }
-            return "";
-        }
-
-        public void doJoin() throws InterruptedException {
-            if (isWindows) {
-                // Windows doesn't disconnect background processes (start /b)
-                // from the console of foreground processes, so waiting until
-                // the end of output from server.bat means waiting until the
-                // server process itself ends. We can't wait that long, so we
-                // wait one second after .waitFor() ends. Hopefully this will
-                // be long enough to copy all the output from the script.
-
-                synchronized (this) {
-                    long begin = System.nanoTime();
-                    long end = begin
-                            + TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
-                    long duration = end - begin;
-                    while (!terminated && duration > 0) {
-                        TimeUnit.NANOSECONDS.timedWait(this, duration);
-                        duration = end - System.nanoTime();
-                    }
-
-                    // If the thread didn't end after waiting for a second,
-                    // then assume it's stuck in a blocking read. Oh well,
-                    // it's a daemon thread, so it'll go away eventually. Let
-                    // it know that we gave up to avoid spurious output in case
-                    // it eventually wakes up.
-                    joined = true;
-                }
-            } else {
-                super.join();
-            }
-        }
     }
 }
