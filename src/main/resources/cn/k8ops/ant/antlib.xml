@@ -2,4 +2,5 @@
 <antlib>
     <!-- Task -->
     <taskdef classname="cn.k8ops.ant.PipelineTask" name="pipeline"/>
+    <taskdef classname="cn.k8ops.ant.ArchiveTask" name="archive"/>
 </antlib>

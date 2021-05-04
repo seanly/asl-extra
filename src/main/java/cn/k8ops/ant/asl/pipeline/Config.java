@@ -28,9 +28,11 @@ public class Config {
     private List<Step> steps = new ArrayList<>();
 
     private Map<String, String> environment;
+    private File configFile = null;
 
     @SneakyThrows
     Config(File configFile) {
+        this.configFile = configFile;
         this.rawConfig = new Yaml().load(new FileInputStream(configFile));
     }
 

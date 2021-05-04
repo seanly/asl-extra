@@ -8,7 +8,7 @@ pipeline: # <- steps
     environment:
       HELLO: hello-world
     tasks:
-      - task.id: hello/sample
+      - task.id: asl-tasks/sample
         arg1: hello-world-${env.HELLO}
     when:
       environment:
