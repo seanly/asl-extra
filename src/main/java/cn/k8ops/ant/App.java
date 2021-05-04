@@ -1,5 +1,7 @@
 package cn.k8ops.ant;
 
+import cn.k8ops.ant.tasks.PipelineTask;
+
 /**
  * Hello world!
  *

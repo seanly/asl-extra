@@ -1,6 +1,6 @@
 package cn.k8ops.ant.asl.pipeline;
 
-import cn.k8ops.ant.PipelineTask;
+import cn.k8ops.ant.tasks.PipelineTask;
 import lombok.SneakyThrows;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;

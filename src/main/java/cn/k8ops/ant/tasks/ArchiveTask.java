@@ -1,4 +1,4 @@
-package cn.k8ops.ant;
+package cn.k8ops.ant.tasks;
 
 import lombok.Getter;
 import lombok.Setter;

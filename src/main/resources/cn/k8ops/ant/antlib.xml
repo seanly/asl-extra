@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <antlib>
     <!-- Task -->
-    <taskdef classname="cn.k8ops.ant.PipelineTask" name="pipeline"/>
-    <taskdef classname="cn.k8ops.ant.MinioArchiveTask" name="minio-archive"/>
-    <taskdef classname="cn.k8ops.ant.AlicloudOssArchiveTask" name="alicloud-oss-archive"/>
+    <taskdef classname="cn.k8ops.ant.tasks.PipelineTask" name="pipeline"/>
+    <taskdef classname="cn.k8ops.ant.tasks.MinioArchiveTask" name="minio-archive"/>
+    <taskdef classname="cn.k8ops.ant.tasks.AlicloudOssArchiveTask" name="alicloud-oss-archive"/>
 </antlib>
