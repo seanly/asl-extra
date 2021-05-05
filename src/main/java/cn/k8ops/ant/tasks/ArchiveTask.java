@@ -32,9 +32,13 @@ public abstract class ArchiveTask extends Task {
     @Setter
     protected String remotePath;
 
-    protected List<FileSet> fileSets;
+    protected List<FileSet> fileSets = new ArrayList<>();
 
-    public void addFileset(FileSet fs) {
+    @Setter
+    @Getter
+    protected String xmlReport;
+
+    public void addFileSet(FileSet fs) {
         fileSets.add(fs);
     }
 

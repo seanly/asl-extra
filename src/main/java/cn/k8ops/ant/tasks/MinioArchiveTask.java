@@ -1,5 +1,6 @@
 package cn.k8ops.ant.tasks;
 
+import cn.k8ops.ant.reports.ArchiveXmlReport;
 import io.minio.BucketExistsArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -30,6 +31,8 @@ public class MinioArchiveTask extends ArchiveTask {
 
         List<File> files = scanFileSets();
 
+        ArchiveXmlReport report = new ArchiveXmlReport();
+
         for (File file: files) {
             if (!file.exists()) {
                 throw new BuildException(String.format("file(%s) is not exists", file.getName()));
@@ -39,7 +42,9 @@ public class MinioArchiveTask extends ArchiveTask {
             if (trimToNull(url) == null) {
                 throw new BuildException("file archive error");
             }
+            report.addArchive(url);
         }
+        report.save(xmlReport);
         log("archive(minio) is ok");
     }
 
@@ -54,6 +59,7 @@ public class MinioArchiveTask extends ArchiveTask {
                     .stream(pis, pis.available(), -1)
                     .build());
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new BuildException("archive put error");
         }
 

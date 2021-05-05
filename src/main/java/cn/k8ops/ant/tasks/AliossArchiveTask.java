@@ -1,5 +1,6 @@
 package cn.k8ops.ant.tasks;
 
+import cn.k8ops.ant.reports.ArchiveXmlReport;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import lombok.SneakyThrows;
@@ -11,7 +12,7 @@ import java.util.List;
 
 import static org.apache.tools.ant.util.StringUtils.trimToNull;
 
-public class AlicloudOssArchiveTask extends ArchiveTask{
+public class AliossArchiveTask extends ArchiveTask{
 
     @Override
     public void execute() {
@@ -23,6 +24,7 @@ public class AlicloudOssArchiveTask extends ArchiveTask{
         }
 
         List<File> files = scanFileSets();
+        ArchiveXmlReport report = new ArchiveXmlReport();
 
         for (File file: files) {
             if (!file.exists()) {
@@ -33,10 +35,12 @@ public class AlicloudOssArchiveTask extends ArchiveTask{
             if (trimToNull(url) == null) {
                 throw new BuildException("file archive error");
             }
+            report.addArchive(url);
         }
 
         client.shutdown();
 
+        report.save(xmlReport);
         log("archive(alicloud oss) is ok");
     }
 

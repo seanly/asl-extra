@@ -3,5 +3,5 @@
     <!-- Task -->
     <taskdef classname="cn.k8ops.ant.tasks.PipelineTask" name="pipeline"/>
     <taskdef classname="cn.k8ops.ant.tasks.MinioArchiveTask" name="minio-archive"/>
-    <taskdef classname="cn.k8ops.ant.tasks.AlicloudOssArchiveTask" name="alicloud-oss-archive"/>
+    <taskdef classname="cn.k8ops.ant.tasks.AliossArchiveTask" name="alioss-archive"/>
 </antlib>
