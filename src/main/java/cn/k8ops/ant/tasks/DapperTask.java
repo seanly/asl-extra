@@ -58,6 +58,7 @@ public class DapperTask extends Task {
 
         log(String.format("Running build in %s", name));
 
+        log(String.join(" ", commands));
         ProcessBuilder pb = new ProcessBuilder(commands);
         Process p = pb.inheritIO().start();
         if (p.waitFor() != 0) {
@@ -149,6 +150,7 @@ public class DapperTask extends Task {
         commands.add(dapperFile.getAbsolutePath());
         commands.add(dapperFile.getParent());
 
+        log(String.join(" ", commands));
         ProcessBuilder pb = new ProcessBuilder(commands);
         Process p = pb.inheritIO().start();
         if (p.waitFor() != 0) {
