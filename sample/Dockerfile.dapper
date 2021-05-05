@@ -1,0 +1,24 @@
+# vim: set ft=dockerfile:
+
+# 配置构建环境所需镜像地址
+
+FROM registry.cn-hangzhou.aliyuncs.com/k8ops-base/java:8-v1
+
+# 配置工作空间的代码如何映射到构建容器里面
+ENV DAPPER_SOURCE /code
+
+# 配置构建完成后，需要将哪个目录的内容从容器中拷贝出来
+ENV DAPPER_OUTPUT ./dist
+
+# 配置构建容易，在构建过程中的其他参数，可以用作缓存数据
+ENV DAPPER_RUN_ARGS "-v /tmp/mvnrepo:/tmp/mvnrepo"
+
+# 配置构建容器运行中需要导入的环境变量
+ENV DAPPER_ENV APP_ENV APP_GROUP APP_NAME APP_VERSION
+
+ENV HOME ${DAPPER_SOURCE}
+WORKDIR ${DAPPER_SOURCE}
+
+# 配置构建容器，构建过程中的入口, 相对于WORKDIR指令路径
+ENTRYPOINT ["./jenkins.sh"]
+CMD ["test"]
