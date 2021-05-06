@@ -17,7 +17,7 @@ import java.util.*;
 
 public class DapperTask extends Task {
 
-    private Map<String, String> environ = new HashMap<>();
+    private final Map<String, String> environ = new HashMap<>();
 
     @Setter
     @Getter

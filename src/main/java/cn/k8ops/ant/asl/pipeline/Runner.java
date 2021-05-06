@@ -4,6 +4,8 @@ import cn.k8ops.ant.tasks.PipelineTask;
 import lombok.SneakyThrows;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Ant;
+import org.apache.tools.ant.taskdefs.Property;
 import org.apache.tools.ant.util.StringUtils;
 
 import java.io.File;
@@ -45,19 +47,15 @@ public class Runner {
     }
 
     public boolean start() {
-
         initDirs();
-
         boolean result = false;
 
         for (Step step : config.getSteps()) {
             result = runStep(step);
-
             if (!result) {
                 break;
             }
         }
-
         return result;
     }
 
@@ -150,25 +148,21 @@ public class Runner {
             throw new BuildException("asl.root dir is not exists.");
         }
 
-        File antExec = new File(aslDir, "tools/ant/bin/ant");
         File runXml = new File(aslDir, "run.xml");
 
-        // command
-        List<String> commands = new ArrayList<>();
-        commands.add(antExec.getAbsolutePath());
-        commands.add("-f");
-        commands.add(runXml.getAbsolutePath());
-        commands.add("task");
-        commands.add("-propertyfile");
-        commands.add(propsFile.getAbsolutePath());
-        commands.add("-logger");
-        commands.add("org.apache.tools.ant.NoBannerLogger");
+        try {
+            Ant ant = new Ant(pipelineTask);
+            ant.setInheritRefs(true);
+            ant.setAntfile(runXml.getAbsolutePath());
+            ant.setTarget("task");
+            Property property = ant.createProperty();
+            property.setFile(propsFile.getAbsoluteFile());
+            ant.execute();
+        } catch (BuildException e) {
+            return false;
+        }
 
-        processBuilder.command(commands);
-        Map<String, String> env = processBuilder.environment();
-        env.putAll(task.getEnvironment());
-        Process p = processBuilder.inheritIO().start();
-        return p.waitFor() == 0;
+        return true;
     }
 
     private File getWs() {
