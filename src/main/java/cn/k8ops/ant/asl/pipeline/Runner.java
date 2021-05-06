@@ -130,6 +130,8 @@ public class Runner {
         if (!propsFile.getParentFile().exists()) {
             propsFile.getParentFile().mkdirs();
         }
+
+        properties.put("ws.dir", getWs().getAbsolutePath());
         properties.store(new FileOutputStream(propsFile), "task properties");
 
         String aslRoot;

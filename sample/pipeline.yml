@@ -10,6 +10,8 @@ pipeline: # <- steps
     tasks:
       - task.id: asl-tasks/sample
         arg1: hello-world-${env.HELLO}
+      - package:
+          fileset.includes: "jenkins.sh"
     when:
       environment:
         WORLD: hello
