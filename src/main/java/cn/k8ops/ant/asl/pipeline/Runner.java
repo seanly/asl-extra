@@ -130,19 +130,27 @@ public class Runner {
             propsFile.getParentFile().mkdirs();
         }
 
-        properties.put("ws.dir", getWs().getAbsolutePath());
-        properties.store(new FileOutputStream(propsFile), "task properties");
+        String wsDir = null;
 
         String aslRoot;
         if (getProject() == null) {
             aslRoot = System.getProperty("asl.root");
+            wsDir = System.getProperty("ws.dir");
         } else {
             aslRoot = getProject().getProperty("asl.root");
+            wsDir = getProject().getProperty("ws.dir");
         }
 
         if (aslRoot == null) {
             throw new BuildException("asl.root is not set.");
         }
+
+        if (wsDir == null) {
+            wsDir = getWs().getAbsolutePath();
+        }
+
+        properties.put("ws.dir", wsDir);
+        properties.store(new FileOutputStream(propsFile), "task properties");
 
         File aslDir = new File(aslRoot);
         if (!aslDir.exists()) {
