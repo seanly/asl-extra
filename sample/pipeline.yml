@@ -1,14 +1,15 @@
 environment:
   APP_NAME: sample
   APP_ENV: test
+  WORLD: hello
 
 # pipeline模板
 pipeline: # <- steps
   - name: build
     environment:
       HELLO: hello-world
-    tasks:
-      - task.id: asl-tasks/sample
+    steps:
+      - step.id: sample
         arg1: hello-world-${env.HELLO}
       - package:
           fileset.includes: "jenkins.sh"

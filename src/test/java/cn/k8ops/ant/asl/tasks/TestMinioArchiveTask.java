@@ -1,4 +1,4 @@
-package cn.k8ops.ant.tasks;
+package cn.k8ops.ant.asl.tasks;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.io.File;
 
 
-public class MinioArchiveTaskTest {
+public class TestMinioArchiveTask {
 
     MinioArchiveTask task = new MinioArchiveTask();
 

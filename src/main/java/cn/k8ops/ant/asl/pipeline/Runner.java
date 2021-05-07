@@ -1,6 +1,6 @@
 package cn.k8ops.ant.asl.pipeline;
 
-import cn.k8ops.ant.tasks.PipelineTask;
+import cn.k8ops.ant.asl.tasks.PipelineTask;
 import lombok.SneakyThrows;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -50,8 +50,8 @@ public class Runner {
         initDirs();
         boolean result = false;
 
-        for (Step step : config.getSteps()) {
-            result = runStep(step);
+        for (Stage stage : config.getStages()) {
+            result = runStage(stage);
             if (!result) {
                 break;
             }
@@ -66,29 +66,29 @@ public class Runner {
         return pipelineTask.getProject();
     }
 
-    private boolean runStep(Step step) {
+    private boolean runStage(Stage stage) {
         boolean result = false;
 
-        log(String.format("--//STEP: %s------", step.getName()));
+        log(String.format("--//STAGE: %s", stage.getName()));
 
         Map<String, String> localEnviron = config.getEnvironment();
-        localEnviron.putAll(step.getEnvironment());
+        localEnviron.putAll(stage.getEnvironment());
         localEnviron.putAll(processBuilder.environment());
-        if (!step.shouldRun(localEnviron)) {
+        if (!stage.shouldRun(localEnviron)) {
             return true;
         }
 
-        log("--//TASKS-------------");
-        for (Task task : step.getTasks()) {
-            result = runTask(task);
+        log("--//STEPS:...");
+        for (Step step : stage.getSteps()) {
+            result = runStep(step);
             if (!result) {
                 break;
             }
         }
 
-        if (step.getAfterTasks().size() != 0) {
-            log("--//AFTER-TASKS------");
-            boolean result2 = runTasks(step.getAfterTasks());
+        if (stage.getAfterSteps().size() != 0) {
+            log("\n\n--//AFTER-STEPS:...");
+            boolean result2 = runSteps(stage.getAfterSteps());
             if (result) {
                 result = result2;
             }
@@ -97,9 +97,9 @@ public class Runner {
         return result;
     }
 
-    private boolean runTasks(List<Task> tasks) {
-        for(Task task : tasks) {
-            if (!runTask(task)) {
+    private boolean runSteps(List<Step> steps) {
+        for(Step step : steps) {
+            if (!runStep(step)) {
                 return false;
             }
         }
@@ -107,22 +107,21 @@ public class Runner {
         return true;
     }
 
-    private boolean runTask(Task task) {
+    private boolean runStep(Step task) {
         return ant(task);
     }
 
     public final static String DIR_DOT_CI = ".ci";
 
     @SneakyThrows
-    private boolean ant(Task task) {
-        log(String.format("--//task: %s", task.getId()));
+    private boolean ant(Step step) {
 
-        String runId = String.format("%s-%s", task.getId(), getCurrentTime());
+        String runId = String.format("%s-%s", step.getId(), getCurrentTime());
 
         Properties properties = new Properties();
-        properties.putAll(task.getProperties());
+        properties.putAll(step.getProperties());
 
-        for (Map.Entry<String, String> environ : task.getEnvironment().entrySet()) {
+        for (Map.Entry<String, String> environ : step.getEnvironment().entrySet()) {
             properties.put(String.format("env.%s", environ.getKey()), environ.getValue());
         }
 
@@ -156,11 +155,12 @@ public class Runner {
             Ant ant = new Ant(pipelineTask);
             ant.setInheritRefs(true);
             ant.setAntfile(runXml.getAbsolutePath());
-            ant.setTarget("task");
+            ant.setTarget("step");
             Property property = ant.createProperty();
             property.setFile(propsFile.getAbsoluteFile());
             ant.execute();
         } catch (BuildException e) {
+            log(e.getMessage());
             return false;
         }
 

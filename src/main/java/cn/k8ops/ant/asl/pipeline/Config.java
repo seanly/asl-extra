@@ -17,15 +17,15 @@ public class Config {
 
     public static final String KEY_ENVIRONMENT = "environment";
     public static final String KEY_PIPELINE = "pipeline";
-    public static final String KEY_TASKS = "tasks";
-    public static final String KEY_AFTER_TASKS = "after-tasks";
+    public static final String KEY_STEPS = "steps";
+    public static final String KEY_AFTER_STEPS = "after-steps";
     public static final String KEY_NAME = "name";
     public static final String KEY_WHEN = "when";
-    public static final String KEY_TASK_ID = "task.id";
+    public static final String KEY_STEP_ID = "step.id";
 
     private final Map rawConfig;
 
-    private List<Step> steps = new ArrayList<>();
+    private List<Stage> stages = new ArrayList<>();
 
     private Map<String, String> environment;
     private File configFile = null;
@@ -67,8 +67,8 @@ public class Config {
         if (pipelineConfig != null) {
             for (Object stepConfig: pipelineConfig) {
                 if (stepConfig instanceof Map) {
-                    Step step = Step.parse((Map) stepConfig, environment);
-                    steps.add(step);
+                    Stage stage = Stage.parse((Map) stepConfig, environment);
+                    stages.add(stage);
                 } else {
                     throw new ConfigException("config format error.");
                 }

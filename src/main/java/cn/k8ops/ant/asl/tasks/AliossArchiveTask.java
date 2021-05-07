@@ -1,6 +1,6 @@
-package cn.k8ops.ant.tasks;
+package cn.k8ops.ant.asl.tasks;
 
-import cn.k8ops.ant.reports.ArchiveXmlReport;
+import cn.k8ops.ant.asl.reports.ArchiveXmlReport;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import lombok.SneakyThrows;

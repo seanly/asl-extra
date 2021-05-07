@@ -1,6 +1,6 @@
-package cn.k8ops.ant.tasks;
+package cn.k8ops.ant.asl.tasks;
 
-import cn.k8ops.ant.reports.ArchiveXmlReport;
+import cn.k8ops.ant.asl.reports.ArchiveXmlReport;
 import io.minio.BucketExistsArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;

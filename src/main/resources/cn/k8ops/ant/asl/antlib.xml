@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<antlib>
+    <!-- Task -->
+    <taskdef classname="cn.k8ops.ant.asl.tasks.PipelineTask" name="pipeline"/>
+    <taskdef classname="cn.k8ops.ant.asl.tasks.MinioArchiveTask" name="minio-archive"/>
+    <taskdef classname="cn.k8ops.ant.asl.tasks.AliossArchiveTask" name="alioss-archive"/>
+    <taskdef classname="cn.k8ops.ant.asl.tasks.DapperTask" name="dapper"/>
+</antlib>

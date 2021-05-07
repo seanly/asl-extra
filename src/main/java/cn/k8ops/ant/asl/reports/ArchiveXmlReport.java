@@ -1,4 +1,4 @@
-package cn.k8ops.ant.reports;
+package cn.k8ops.ant.asl.reports;
 
 import lombok.Data;
 import lombok.SneakyThrows;
