@@ -1,7 +1,6 @@
 package cn.k8ops.ant.asl.tasks;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -30,6 +29,15 @@ public class DapperTask extends Task {
     @SneakyThrows
     @Override
     public void execute() {
+
+        if (null == StringUtils.trimToNull(file)) {
+            throw new BuildException("dapperfile not set.");
+        }
+
+        File configFile = new File(file);
+        if (!configFile.exists()) {
+            throw new BuildException("Dapperfile is not exist.");
+        }
         Run();
     }
 
